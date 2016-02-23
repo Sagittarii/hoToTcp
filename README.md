@@ -26,6 +26,4 @@ This code is still a work in progress, and I am not a professionnal python devel
 
 If the client disconnect and reconnects, the messages are not correctly directed to this new connection. This has to do with closing properly the protocol object created at each connection, which still tries to get messages from the queues. It will be solved in the near future.
 
-Message segments properties (bold, italic, links, ...) are not used, and will be generated from html markup ("b" "i" and "a" tags).
-
 Images should be handled too.
