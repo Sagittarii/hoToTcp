@@ -6,6 +6,7 @@ import hangups
 import sys
 import json
 from hangups.conversation import ConversationList, build_user_conversation_list
+import hangups
 
 from html.parser import HTMLParser
 from html.entities import name2codepoint
@@ -204,7 +205,8 @@ class simpleHTMLParser(HTMLParser):
             self._segments.append(
               hangups.ChatMessageSegment(
                 "\n", 
-                hangups.SegmentType.LINE_BREAK).serialize())
+                1).serialize())
+                #hangups.SegmentType.LINE_BREAK).serialize())
 
     def handle_data(self, data):
         if self._flags["link_target"] is not None:
