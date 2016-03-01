@@ -32,7 +32,7 @@ class TcpServer(asyncio.Protocol):
         print("## TCP receive loop Ready!")
         while True:
             data = yield from queueHoToTcp.get()
-            self.transport.write(data.encode('utf-8'))
+            self.transport.write(b'\x1e' + data.encode('utf-8'))
             print('TCP Message sent: {!r}'.format(data))
 
     def data_received(self, raw):
