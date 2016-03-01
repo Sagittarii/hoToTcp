@@ -41,12 +41,15 @@ class TcpServer(asyncio.Protocol):
         The argument is a bytes object.
         """
         print("TCP received data :", raw)
-        data = json.loads(raw.decode('utf-8'))
-        asyncio.async(self.send_message_to_Ho(data))
+        asyncio.async(self.send_message_to_Ho(raw))
 
     @asyncio.coroutine
     def send_message_to_Ho(self, data):
-        yield from queueTcpToHo.put(data)
+        for record in data.split(b'\x1E'):
+            print("Send Message after split:", record)
+            if len(record) > 0:
+                data = json.loads(record.decode('utf-8'))
+                yield from queueTcpToHo.put(data)
 
     @asyncio.coroutine
     def connection_lost(self, exc):
