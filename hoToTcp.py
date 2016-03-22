@@ -1,16 +1,19 @@
 #!/usr/bin/python3
 
+import enum
 
 import asyncio
 import hangups
 import sys
 import json
 from hangups.conversation import ConversationList, build_user_conversation_list
-import hangups
 
 from html.parser import HTMLParser
 from html.entities import name2codepoint
 import re
+
+# class SegmentType(enum.Enum): Should be imported from hangups.schemas, but couldn't find the syntax to do so correctly... 
+
 
 class TcpServer(asyncio.Protocol):
     def connection_made(self, transport):
@@ -132,7 +135,12 @@ class HoClient():
                  segment=simple_parse_to_segments(data)
             ),
         )
-        yield from self.client.send_chat_message(request)
+        try:
+            yield from self.client.send_chat_message(request)
+        except: # catch *all* exceptions
+            e = sys.exc_info()[0]
+            print("!!!!!!!EXCEPTION!!!!!: %s" % e )
+            sys.exit(-1)
 
 
     @asyncio.coroutine
@@ -144,6 +152,7 @@ class HoClient():
     def on_event(self, conv_event):
         print("on_event", conv_event, dir(conv_event))
         if isinstance(conv_event, hangups.ChatMessageEvent):
+            #print("on_event details : ", conv_event.timestamp, conv_event._event, conv_event.user_id, conv_event.conversation_id, conv_event.segments, conv_event.id_, conv_event.attachments, conv_event.segments, dir(conv_event.segments))
             print("## On Event. Pushing data to queue HoToTcp")
             yield from self.outQueue.put(json.dumps({"conversation": conv_event.conversation_id, "timestamp": conv_event.timestamp.timestamp(), "user": conv_event.user_id.chat_id, "text": conv_event.text}))
             print("## On Event. data pushed to queue HoToTcp")
@@ -195,10 +204,12 @@ class simpleHTMLParser(HTMLParser):
         elif tag == 'u':
             self._flags["underline"] = False
         elif tag == 'a':
+            #print("Hangups object for creating link", hangups, dir(hangups), hangups.ChatMessageSegment, dir(hangups.ChatMessageSegment))
             self._segments.append(
               hangups.ChatMessageSegment(
                 self._link_text,
-                hangups.SegmentType.LINK,
+                2,
+                #SegmentType.LINK,
                 link_target=self._flags["link_target"],
                 is_bold=self._flags["bold"], 
                 is_italic=self._flags["italic"], 
@@ -209,7 +220,7 @@ class simpleHTMLParser(HTMLParser):
               hangups.ChatMessageSegment(
                 "\n", 
                 1).serialize())
-                #hangups.SegmentType.LINE_BREAK).serialize())
+                #SegmentType.LINE_BREAK).serialize())
 
     def handle_data(self, data):
         if self._flags["link_target"] is not None:
